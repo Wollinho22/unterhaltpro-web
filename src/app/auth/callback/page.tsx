@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 function getHashParams(): URLSearchParams {
-  // Wandelt #access_token=...&refresh_token=... in URLSearchParams um
   const hash = typeof window !== "undefined" ? window.location.hash : "";
   const h = hash.startsWith("#") ? hash.slice(1) : hash;
   return new URLSearchParams(h);
@@ -54,9 +53,8 @@ export default function CallbackPage() {
           return;
         }
 
-        // 4) Fallback: Prüfe, ob evtl. nur ?code vorhanden ist (manche Clients strippen verifier)
+        // 4) Fallback: nur ?code vorhanden
         if (code && !verifier) {
-          // Letzter Rettungsanker: Supabase versucht selbst zu parsen
           const { error } = await supabase.auth.exchangeCodeForSession(url.toString());
           if (!error) {
             setMsg("Erfolgreich angemeldet. Weiterleiten…");
@@ -65,12 +63,12 @@ export default function CallbackPage() {
           }
         }
 
-        // 5) Nichts Passendes gefunden
         throw new Error(
           "Kein gültiger Anmeldecode gefunden. Öffnen Sie den Link im gleichen Browser und prüfen Sie die Redirect-URL."
         );
-      } catch (e: any) {
-        setMsg(`Fehler bei der Anmeldung: ${e?.message || "Unbekannt"}`);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setMsg(`Fehler bei der Anmeldung: ${msg || "Unbekannt"}`);
       }
     }
     run();

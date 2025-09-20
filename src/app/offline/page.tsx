@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const metadata = { title: "Offline – UnterhaltPro 2025" };
 
 export default function OfflinePage() {
@@ -10,9 +12,9 @@ export default function OfflinePage() {
       <p className="text-gray-700 mt-2">
         Sobald die Verbindung wieder da ist, laden Sie die Seite neu.
       </p>
-      <a href="/" className="inline-block mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+      <Link href="/" className="inline-block mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
         Zur Startseite
-      </a>
+      </Link>
     </main>
   );
 }

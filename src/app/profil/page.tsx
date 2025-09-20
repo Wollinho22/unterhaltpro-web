@@ -34,10 +34,12 @@ export default function ProfilPage() {
           .single();
         if (error) throw error;
         if (!mounted) return;
-        setProfile(data as Profile);
-        setFullName(data.full_name || "");
-      } catch (e: any) {
-        setMsg(e?.message || "Fehler beim Laden des Profils");
+        const p = data as Profile;
+        setProfile(p);
+        setFullName(p.full_name || "");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setMsg(msg || "Fehler beim Laden des Profils");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -56,8 +58,9 @@ export default function ProfilPage() {
         .eq("id", profile.id);
       if (error) throw error;
       setMsg("Gespeichert.");
-    } catch (e: any) {
-      setMsg(e?.message || "Fehler beim Speichern");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setMsg(msg || "Fehler beim Speichern");
     }
   }
 
@@ -78,7 +81,7 @@ export default function ProfilPage() {
               <input
                 className="w-full rounded border p-2"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(ev) => setFullName(ev.target.value)}
                 placeholder="Ihr Name (optional)"
               />
               <button

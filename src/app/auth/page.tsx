@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function AuthPage() {
@@ -8,7 +9,7 @@ export default function AuthPage() {
   const [status, setStatus] = useState<null | "loading" | "sent" | "error">(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  async function sendMagicLink(e: React.FormEvent) {
+  async function sendMagicLink(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("loading");
     setErrorMsg("");
@@ -21,9 +22,10 @@ export default function AuthPage() {
       });
       if (error) throw error;
       setStatus("sent");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
       setStatus("error");
-      setErrorMsg(err?.message || "Unbekannter Fehler");
+      setErrorMsg(msg || "Unbekannter Fehler");
     }
   }
 
@@ -61,9 +63,9 @@ export default function AuthPage() {
         <p className="mt-4 text-red-700">Fehler: {errorMsg}</p>
       )}
 
-      <a href="/" className="inline-block mt-6 text-sm underline">
+      <Link href="/" className="inline-block mt-6 text-sm underline">
         Zurück zur Startseite
-      </a>
+      </Link>
     </main>
   );
 }
