@@ -20,6 +20,7 @@ export const metadata = {
 import Link from "next/link";
 import "./globals.css";
 import SWRegister from "@/components/sw-register";
+import UserAuth from "@/components/user-auth";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/impressum" className="hover:underline">Impressum</Link>
               <Link href="/datenschutz" className="hover:underline">Datenschutz</Link>
               <Link href="/agb" className="hover:underline">AGB</Link>
-              <Link href="/widerruf" className="hover:underline">Widerruf</Link>
+              <Link href="/widerruf" className="hover:underline">Widerruf</Link><UserAuth />
             </div>
           </nav>
         </header>

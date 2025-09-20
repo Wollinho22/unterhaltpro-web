@@ -1,0 +1,13 @@
+{
+  "name": "UnterhaltPro 2025",
+  "short_name": "UnterhaltPro",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "lang": "de-DE",
+  "scope": "/",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "48x48 64x64", "type": "image/x-icon" }
+  ]
+}

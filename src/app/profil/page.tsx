@@ -1,0 +1,102 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import RequireAuth from "@/components/require-auth";
+import { supabase } from "@/lib/supabaseClient";
+
+type Profile = {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export default function ProfilPage() {
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        setLoading(true);
+        const { data: userData } = await supabase.auth.getUser();
+        const uid = userData.user?.id;
+        if (!uid) throw new Error("Keine Session gefunden");
+
+        const { data, error } = await supabase
+          .from("app.profiles")
+          .select("id, email, full_name, created_at, updated_at")
+          .eq("id", uid)
+          .single();
+        if (error) throw error;
+        if (!mounted) return;
+        setProfile(data as Profile);
+        setFullName(data.full_name || "");
+      } catch (e: any) {
+        setMsg(e?.message || "Fehler beim Laden des Profils");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  async function save() {
+    try {
+      setMsg(null);
+      if (!profile) return;
+      const { error } = await supabase
+        .from("app.profiles")
+        .update({ full_name: fullName })
+        .eq("id", profile.id);
+      if (error) throw error;
+      setMsg("Gespeichert.");
+    } catch (e: any) {
+      setMsg(e?.message || "Fehler beim Speichern");
+    }
+  }
+
+  return (
+    <RequireAuth>
+      <main className="max-w-xl mx-auto py-8">
+        <h1 className="text-xl font-semibold">Profil</h1>
+        {loading ? (
+          <p className="mt-3 text-gray-600">Lade Profil…</p>
+        ) : profile ? (
+          <div className="mt-4 space-y-4">
+            <div className="rounded border bg-white p-4">
+              <div className="text-sm text-gray-600">E-Mail</div>
+              <div className="font-mono">{profile.email}</div>
+            </div>
+            <div className="rounded border bg-white p-4">
+              <label className="block text-sm text-gray-600 mb-1">Vollständiger Name</label>
+              <input
+                className="w-full rounded border p-2"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ihr Name (optional)"
+              />
+              <button
+                onClick={save}
+                className="mt-3 rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+              >
+                Speichern
+              </button>
+              {msg && <p className="mt-2 text-sm text-gray-700">{msg}</p>}
+            </div>
+            <p className="text-xs text-gray-500">
+              Hinweis: Profildaten werden DSGVO-konform in der EU gespeichert. Ihre E-Mail stammt aus dem Auth-System.
+            </p>
+          </div>
+        ) : (
+          <p className="mt-3 text-red-700">Profil nicht gefunden.</p>
+        )}
+      </main>
+    </RequireAuth>
+  );
+}
