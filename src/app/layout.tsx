@@ -1,10 +1,25 @@
 export const metadata = {
   title: "UnterhaltPro 2025",
   description: "Kindesunterhalt-Rechner DE (Düsseldorfer Tabelle 2025)",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#0ea5e9",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico" // später ersetzen wir das durch ein 180×180 PNG
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "UnterhaltPro 2025",
+  },
+  formatDetection: {
+    telephone: false
+  }
 };
 
 import Link from "next/link";
 import "./globals.css";
+import SWRegister from "@/components/sw-register";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -27,7 +42,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="mx-auto max-w-5xl p-6 text-xs text-gray-500">
           © 2025 UnterhaltPro – Info-Tool, keine Rechtsberatung. Prüfen Sie stets die aktuellen Veröffentlichungen des OLG Düsseldorf und Ihrer OLG-Leitlinien.
         </footer>
-      </body>
+      <SWRegister />
+</body>
     </html>
   );
 }
