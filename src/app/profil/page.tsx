@@ -32,41 +32,52 @@ export default function ProfilPage() {
         if (!uid) throw new Error("Keine Session gefunden");
 
         // 1) Profil versuchen zu lesen (maybeSingle: 406 = nicht vorhanden)
-        const {
-          data: fetched,
-          error: fetchError,
-          status: fetchStatus,
-        } = await supabase
-          .from("app.profiles")
-          .select("id, email, full_name, created_at, updated_at")
-          .eq("id", uid)
-          .maybeSingle();
+const {
+  data: fetched,
+  error: fetchError,
+  status: fetchStatus,
+} = await supabase
+  .from("app.profiles")
+  .select("id, email, full_name, created_at, updated_at")
+  .eq("id", uid)
+  .maybeSingle();
 
-        if (fetchError && fetchStatus !== 406) {
-          throw fetchError;
-        }
+// Debug-Hilfe: Fehler verständlich aufbereiten
+if (fetchError && fetchStatus !== 406) {
+  const readable =
+    (fetchError as any)?.message ||
+    JSON.stringify(fetchError, Object.getOwnPropertyNames(fetchError));
+  throw new Error(`Fetch error (${fetchStatus}): ${readable}`);
+}
 
-        let data = fetched;
+let data = fetched;
 
-        // 2) Wenn nicht vorhanden: automatisch anlegen (RLS-Insert-Policy erforderlich)
-        if ((!data || fetchStatus === 406) && !fetchError) {
-          const { error: insErr } = await supabase
-            .from("app.profiles")
-            .insert({ id: uid, email });
-          if (insErr) throw insErr;
+// 2) Wenn nicht vorhanden: automatisch anlegen (RLS-Insert-Policy erforderlich)
+if ((!data || fetchStatus === 406) && !fetchError) {
+  const { error: insErr } = await supabase
+    .from("app.profiles")
+    .insert({ id: uid, email });
+  if (insErr) {
+    const readable =
+      (insErr as any)?.message ||
+      JSON.stringify(insErr, Object.getOwnPropertyNames(insErr));
+    throw new Error(`Insert error: ${readable}`);
+  }
 
-          // 3) Danach erneut lesen
-          const {
-            data: data2,
-            error: err2,
-          } = await supabase
-            .from("app.profiles")
-            .select("id, email, full_name, created_at, updated_at")
-            .eq("id", uid)
-            .single();
-          if (err2) throw err2;
-          data = data2;
-        }
+  // 3) Danach erneut lesen
+  const { data: data2, error: err2 } = await supabase
+    .from("app.profiles")
+    .select("id, email, full_name, created_at, updated_at")
+    .eq("id", uid)
+    .single();
+  if (err2) {
+    const readable =
+      (err2 as any)?.message ||
+      JSON.stringify(err2, Object.getOwnPropertyNames(err2));
+    throw new Error(`Reload error: ${readable}`);
+  }
+  data = data2;
+}
 
         if (!mounted) return;
 
@@ -142,15 +153,15 @@ export default function ProfilPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-3">
-            <p className="text-red-700">Profil nicht gefunden.</p>
-            {msg && (
-              <p className="mt-1 text-sm text-gray-700">
-                Hinweis: {msg}
-              </p>
-            )}
-          </div>
-        )}
+  <div className="mt-3">
+    <p className="text-red-700">Profil nicht gefunden.</p>
+    {msg && (
+      <pre className="mt-2 text-xs text-gray-700 bg-gray-100 p-2 rounded overflow-auto">
+        {msg}
+      </pre>
+    )}
+  </div>
+) }
       </main>
     </RequireAuth>
   );
