@@ -32,30 +32,42 @@ export default function ProfilPage() {
         if (!uid) throw new Error("Keine Session gefunden");
 
         // 1) Profil versuchen zu lesen (maybeSingle: 406 = nicht vorhanden)
-        let { data, error, status } = await supabase
+        const {
+          data: fetched,
+          error: fetchError,
+          status: fetchStatus,
+        } = await supabase
           .from("app.profiles")
           .select("id, email, full_name, created_at, updated_at")
           .eq("id", uid)
           .maybeSingle();
 
+        if (fetchError && fetchStatus !== 406) {
+          throw fetchError;
+        }
+
+        let data = fetched;
+
         // 2) Wenn nicht vorhanden: automatisch anlegen (RLS-Insert-Policy erforderlich)
-        if ((!data || status === 406) && !error) {
+        if ((!data || fetchStatus === 406) && !fetchError) {
           const { error: insErr } = await supabase
             .from("app.profiles")
             .insert({ id: uid, email });
           if (insErr) throw insErr;
 
           // 3) Danach erneut lesen
-          const res2 = await supabase
+          const {
+            data: data2,
+            error: err2,
+          } = await supabase
             .from("app.profiles")
             .select("id, email, full_name, created_at, updated_at")
             .eq("id", uid)
             .single();
-          if (res2.error) throw res2.error;
-          data = res2.data;
+          if (err2) throw err2;
+          data = data2;
         }
 
-        if (error) throw error;
         if (!mounted) return;
 
         const p = data as Profile;
