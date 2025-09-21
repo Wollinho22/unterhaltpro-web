@@ -103,7 +103,7 @@ export default function ProfilPage() {
     }
   }
 
-  return (
+   return (
     <RequireAuth>
       <main className="max-w-xl mx-auto py-8">
         <h1 className="text-xl font-semibold">Profil</h1>
@@ -142,7 +142,14 @@ export default function ProfilPage() {
             </p>
           </div>
         ) : (
-          <p className="mt-3 text-red-700">Profil nicht gefunden.</p>
+          <div className="mt-3">
+            <p className="text-red-700">Profil nicht gefunden.</p>
+            {msg && (
+              <p className="mt-1 text-sm text-gray-700">
+                Hinweis: {msg}
+              </p>
+            )}
+          </div>
         )}
       </main>
     </RequireAuth>
