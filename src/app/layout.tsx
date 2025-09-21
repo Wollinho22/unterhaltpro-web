@@ -3,24 +3,15 @@ export const metadata = {
   description: "Kindesunterhalt-Rechner DE (Düsseldorfer Tabelle 2025)",
   manifest: "/manifest.webmanifest",
   themeColor: "#0ea5e9",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico" // später ersetzen wir das durch ein 180×180 PNG
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "UnterhaltPro 2025",
-  },
-  formatDetection: {
-    telephone: false
-  }
+  icons: { icon: "/favicon.ico", apple: "/favicon.ico" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "UnterhaltPro 2025" },
+  formatDetection: { telephone: false },
 };
 
 import Link from "next/link";
 import "./globals.css";
-import SWRegister from "@/components/sw-register";
 import UserAuth from "@/components/user-auth";
+import SWRegister from "@/components/sw-register";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -31,11 +22,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="font-semibold">UnterhaltPro 2025</Link>
             <div className="text-sm text-gray-400">|</div>
             <Link href="/rechner" className="text-sm hover:underline">Rechner</Link>
-            <div className="ml-auto flex gap-4 text-sm">
+            <div className="ml-auto flex gap-4 items-center text-sm">
               <Link href="/impressum" className="hover:underline">Impressum</Link>
               <Link href="/datenschutz" className="hover:underline">Datenschutz</Link>
               <Link href="/agb" className="hover:underline">AGB</Link>
-              <Link href="/widerruf" className="hover:underline">Widerruf</Link><UserAuth />
+              <Link href="/widerruf" className="hover:underline">Widerruf</Link>
+              <UserAuth />
             </div>
           </nav>
         </header>
@@ -43,8 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="mx-auto max-w-5xl p-6 text-xs text-gray-500">
           © 2025 UnterhaltPro – Info-Tool, keine Rechtsberatung. Prüfen Sie stets die aktuellen Veröffentlichungen des OLG Düsseldorf und Ihrer OLG-Leitlinien.
         </footer>
-      <SWRegister />
-</body>
+        <SWRegister />
+      </body>
     </html>
   );
 }

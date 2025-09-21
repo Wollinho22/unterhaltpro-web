@@ -3,7 +3,7 @@ export default function Page() {
   return (
     <article>
       <h1>AGB</h1>
-      <p>Mustertext. Später mit Zahlungs-/Lizenzbedingungen (Stripe Billing, Widerruf, Verbraucherrechte) befüllen.</p>
+      <p>Mustertext. Später mit Zahlungs-/Lizenzbedingungen (Stripe), Widerruf, Verbraucherrechte befüllen.</p>
     </article>
   );
 }

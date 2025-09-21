@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Page() {
   return (
     <section className="space-y-4">
@@ -11,12 +13,12 @@ export default function Page() {
         <li>PDF-Export (später serverseitig in EU-Storage)</li>
         <li>Monetarisierung via Stripe (Abo/Einmalzahlungen)</li>
       </ul>
-      <a
+      <Link
         href="/rechner"
         className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
       >
         Zum Rechner
-      </a>
+      </Link>
     </section>
   );
 }

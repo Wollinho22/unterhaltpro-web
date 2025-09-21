@@ -3,8 +3,7 @@ export default function Page() {
   return (
     <article>
       <h1>Datenschutzerklärung</h1>
-      <p>Transparenz nach DSGVO. Keine Rechtsberatung. Datensparsamkeit; keine Klarnamen erforderlich.</p>
-      <p>Hosting: Vercel (Frankfurt geplant), Datenbank: Supabase (EU). Übermittlungen in Drittländer werden vermieden.</p>
+      <p>Transparenz nach DSGVO. Datensparsamkeit; keine Klarnamen erforderlich. Hosting in der EU geplant.</p>
     </article>
   );
 }
