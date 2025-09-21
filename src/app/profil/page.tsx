@@ -12,6 +12,18 @@ type Profile = {
   updated_at: string;
 };
 
+function humanizeError(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  try {
+    if (typeof e === "object" && e !== null) {
+      return JSON.stringify(e);
+    }
+    return String(e);
+  } catch {
+    return "Unbekannter Fehler";
+  }
+}
+
 export default function ProfilPage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -32,61 +44,50 @@ export default function ProfilPage() {
         if (!uid) throw new Error("Keine Session gefunden");
 
         // 1) Profil versuchen zu lesen (maybeSingle: 406 = nicht vorhanden)
-const {
-  data: fetched,
-  error: fetchError,
-  status: fetchStatus,
-} = await supabase
-  .from("app.profiles")
-  .select("id, email, full_name, created_at, updated_at")
-  .eq("id", uid)
-  .maybeSingle();
+        const res = await supabase
+          .from("app.profiles")
+          .select("id, email, full_name, created_at, updated_at")
+          .eq("id", uid)
+          .maybeSingle();
 
-// Debug-Hilfe: Fehler verständlich aufbereiten
-if (fetchError && fetchStatus !== 406) {
-  const readable =
-    (fetchError as any)?.message ||
-    JSON.stringify(fetchError, Object.getOwnPropertyNames(fetchError));
-  throw new Error(`Fetch error (${fetchStatus}): ${readable}`);
-}
+        if (res.error && res.status !== 406) {
+          throw new Error(`Fetch error (${res.status}): ${humanizeError(res.error)}`);
+        }
 
-let data = fetched;
+        let data = res.data as Profile | null;
 
-// 2) Wenn nicht vorhanden: automatisch anlegen (RLS-Insert-Policy erforderlich)
-if ((!data || fetchStatus === 406) && !fetchError) {
-  const { error: insErr } = await supabase
-    .from("app.profiles")
-    .insert({ id: uid, email });
-  if (insErr) {
-    const readable =
-      (insErr as any)?.message ||
-      JSON.stringify(insErr, Object.getOwnPropertyNames(insErr));
-    throw new Error(`Insert error: ${readable}`);
-  }
+        // 2) Wenn nicht vorhanden: automatisch anlegen (RLS-Insert-Policy erforderlich)
+        if ((!data || res.status === 406) && !res.error) {
+          const ins = await supabase
+            .from("app.profiles")
+            .insert({ id: uid, email });
+          if (ins.error) {
+            throw new Error(`Insert error: ${humanizeError(ins.error)}`);
+          }
 
-  // 3) Danach erneut lesen
-  const { data: data2, error: err2 } = await supabase
-    .from("app.profiles")
-    .select("id, email, full_name, created_at, updated_at")
-    .eq("id", uid)
-    .single();
-  if (err2) {
-    const readable =
-      (err2 as any)?.message ||
-      JSON.stringify(err2, Object.getOwnPropertyNames(err2));
-    throw new Error(`Reload error: ${readable}`);
-  }
-  data = data2;
-}
+          // 3) Danach erneut lesen
+          const res2 = await supabase
+            .from("app.profiles")
+            .select("id, email, full_name, created_at, updated_at")
+            .eq("id", uid)
+            .single();
+          if (res2.error) {
+            throw new Error(`Reload error: ${humanizeError(res2.error)}`);
+          }
+          data = res2.data as Profile;
+        }
 
         if (!mounted) return;
 
-        const p = data as Profile;
-        setProfile(p);
-        setFullName(p.full_name || "");
+        if (data) {
+          setProfile(data);
+          setFullName(data.full_name || "");
+        } else {
+          setProfile(null);
+          setMsg("Kein Profil-Datensatz gefunden.");
+        }
       } catch (e: unknown) {
-        const m = e instanceof Error ? e.message : String(e);
-        setMsg(m || "Fehler beim Laden des Profils");
+        setMsg(humanizeError(e));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -102,19 +103,18 @@ if ((!data || fetchStatus === 406) && !fetchError) {
     try {
       setMsg(null);
       if (!profile) return;
-      const { error } = await supabase
+      const upd = await supabase
         .from("app.profiles")
         .update({ full_name: fullName })
         .eq("id", profile.id);
-      if (error) throw error;
+      if (upd.error) throw new Error(humanizeError(upd.error));
       setMsg("Gespeichert.");
     } catch (e: unknown) {
-      const m = e instanceof Error ? e.message : String(e);
-      setMsg(m || "Fehler beim Speichern");
+      setMsg(humanizeError(e));
     }
   }
 
-   return (
+  return (
     <RequireAuth>
       <main className="max-w-xl mx-auto py-8">
         <h1 className="text-xl font-semibold">Profil</h1>
@@ -153,15 +153,15 @@ if ((!data || fetchStatus === 406) && !fetchError) {
             </p>
           </div>
         ) : (
-  <div className="mt-3">
-    <p className="text-red-700">Profil nicht gefunden.</p>
-    {msg && (
-      <pre className="mt-2 text-xs text-gray-700 bg-gray-100 p-2 rounded overflow-auto">
-        {msg}
-      </pre>
-    )}
-  </div>
-) }
+          <div className="mt-3">
+            <p className="text-red-700">Profil nicht gefunden.</p>
+            {msg && (
+              <pre className="mt-2 text-xs text-gray-700 bg-gray-100 p-2 rounded overflow-auto">
+                {msg}
+              </pre>
+            )}
+          </div>
+        )}
       </main>
     </RequireAuth>
   );
