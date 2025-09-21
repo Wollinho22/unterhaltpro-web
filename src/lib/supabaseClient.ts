@@ -10,5 +10,9 @@ export const supabase = createClient(
       persistSession: true,
       autoRefreshToken: true,
     },
+    db: {
+      // WICHTIG: Standard-Schema auf "app" setzen
+      schema: "app",
+    },
   }
 );

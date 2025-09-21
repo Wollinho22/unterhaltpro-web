@@ -45,7 +45,7 @@ export default function ProfilPage() {
 
         // 1) Profil versuchen zu lesen (maybeSingle: 406 = nicht vorhanden)
         const res = await supabase
-          .from("app.profiles")
+          .from("profiles")
           .select("id, email, full_name, created_at, updated_at")
           .eq("id", uid)
           .maybeSingle();
@@ -59,7 +59,7 @@ export default function ProfilPage() {
         // 2) Wenn nicht vorhanden: automatisch anlegen (RLS-Insert-Policy erforderlich)
         if ((!data || res.status === 406) && !res.error) {
           const ins = await supabase
-            .from("app.profiles")
+            .from("profiles")
             .insert({ id: uid, email });
           if (ins.error) {
             throw new Error(`Insert error: ${humanizeError(ins.error)}`);
@@ -67,7 +67,7 @@ export default function ProfilPage() {
 
           // 3) Danach erneut lesen
           const res2 = await supabase
-            .from("app.profiles")
+            .from("profiles")
             .select("id, email, full_name, created_at, updated_at")
             .eq("id", uid)
             .single();
@@ -104,7 +104,7 @@ export default function ProfilPage() {
       setMsg(null);
       if (!profile) return;
       const upd = await supabase
-        .from("app.profiles")
+        .from("profiles")
         .update({ full_name: fullName })
         .eq("id", profile.id);
       if (upd.error) throw new Error(humanizeError(upd.error));
