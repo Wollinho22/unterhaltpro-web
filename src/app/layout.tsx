@@ -2,10 +2,14 @@ export const metadata = {
   title: "UnterhaltPro 2025",
   description: "Kindesunterhalt-Rechner DE (Düsseldorfer Tabelle 2025)",
   manifest: "/manifest.webmanifest",
-  themeColor: "#0ea5e9",
   icons: { icon: "/favicon.ico", apple: "/favicon.ico" },
   appleWebApp: { capable: true, statusBarStyle: "default", title: "UnterhaltPro 2025" },
   formatDetection: { telephone: false },
+};
+
+// NEU: themeColor gehört in viewport
+export const viewport = {
+  themeColor: "#0ea5e9",
 };
 
 import Link from "next/link";
