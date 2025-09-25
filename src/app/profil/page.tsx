@@ -15,6 +15,10 @@ export default function ProfilePage() {
   useEffect(() => {
     let cancelled = false;
 
+    function errMsg(e: unknown) {
+      return e instanceof Error ? e.message : typeof e === "string" ? e : JSON.stringify(e);
+    }
+
     async function load() {
       setLoading(true);
       setError(null);
@@ -34,7 +38,7 @@ export default function ProfilePage() {
         const uid = sessionData.session.user.id;
         const email = sessionData.session.user.email ?? null;
 
-        // 2) WICHTIG: ohne Schema-Präfix, weil Schema bereits 'app' ist
+        // 2) Ohne Schema-Präfix (Schema ist bereits 'app' konfiguriert)
         const res = await supabase
           .from("profiles")
           .select("id, email, full_name, created_at, updated_at")
@@ -45,6 +49,7 @@ export default function ProfilePage() {
 
         let p = res.data as Profile | null;
 
+        // 3) Falls Profil fehlt → anlegen
         if (!p) {
           const ins = await supabase.from("profiles").insert({ id: uid, email }).select().single();
           if (ins.error) throw ins.error;
@@ -55,18 +60,21 @@ export default function ProfilePage() {
           setProfile(p);
           setFullName(p.full_name ?? "");
         }
-      } catch (e: any) {
-        if (!cancelled) setError(`${e?.message || "Unbekannter Fehler"}`);
+      } catch (e: unknown) {
+        if (!cancelled) setError(errMsg(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
     load();
-    const sub = supabase.auth.onAuthStateChange((_e) => load());
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      // bei Login/Refresh erneut laden
+      void load();
+    });
     return () => {
       cancelled = true;
-      sub.data.subscription.unsubscribe();
+      sub.subscription.unsubscribe();
     };
   }, []);
 
